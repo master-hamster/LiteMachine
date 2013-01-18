@@ -20,7 +20,7 @@ Basic Light controller
 //#include <Arduino.h>
 //#include <EAButton.h>
 //#include <EAEventButton.h>
-//#include <EAnalogInput.h>
+#include <EAnalogInput.h>
 //#include <EBeeper.h>
 #include <EButton.h>
 #include <ELED.h>
@@ -32,9 +32,22 @@ Basic Light controller
 
 #define SMALL_LIGHT_PIN      3
 #define BIG_LIGHT_PIN        4        
-#define PIR_PIN              5
+#define MOTION_SENSOR_PIN              5
+#define MODE_BUTTON_PIN      11
+#define LIGHT_SENSOR_PIN     12
+
+#define RED_LED_PIN    7
+#define GREEN_LED_PIN    7
+#define BLUE_LED_PIN    7
 
 
+
+enum BoxMode {
+        bmOff,
+        bmSmallLight,
+        bmBigLight,
+        bmFullLight
+};
 
 
 
@@ -49,27 +62,68 @@ public:
         oid_t bigLightID;
         oid_t smallLightID;
         oid_t modeButtonID;
+        oid_t motionSensorID;
+        oid_t lightSensorID;
         
 	ETimer timer;
         ELED smallLight;
         ELED bigLight;
         EButton modeButton;
+        EButton motionSensor;
+        EAnalogInput lightSensor;
+private:
+        BoxMode currentMode;
+        BoxMode lastMode;
+        int currentLightLevel;
+        bool motionDetected;
 
 };
         
 void MyApplication::init()
 {
+	timerID        = timer.init( 0, 0, true );
+        bigLightID     = bigLight.init( BIG_LIGHT_PIN );
+        smallLightID   = smallLight.init( SMALL_LIGHT_PIN );
+        modeButtonID   = modeButton.init( MODE_BUTTON_PIN );
+        motionSensorID = motionSensor.init( MOTION_SENSOR_PIN ); 
+        lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
 
-	// case 1. passive thermometer, answer only when someone ask
-	timer.init(0,0,true);
+	addObject( &timer );
+	addObject( &bigLight );
+	addObject( &smallLight );
+	addObject( &modeButton );
+	addObject( &motionSensor );
+	addObject( &lightSensor );
 
-	timerID = addObject(&timer);
-
+        currentMode = bmOff;
+        lastMode = bmOff;
+        currentLightLevel = 0;
+        motionDetected = false;
 };
 
 int MyApplication::parseEvent()
+/*
+  Handle next events:
+        current light level measure
+        motion detection
+        mode change
+*/
 {
-	if (currentEvent.eventType==0) {
+        switch ( currentMode ) {
+        case bmOff: 
+             
+                break;
+        case bmSmallLight:
+        
+                break;
+                
+        case bmBigLight:
+        
+                break;
+        }        
+        
+        
+	if ( currentEvent.eventType == 0 ) {
 		//We've got temperature event - let's print data
 		Serial.print("RESULT Temp:");
 		Serial.print(currentEvent.eventData);
