@@ -4,8 +4,11 @@ Event-driven Light Controller, based on Arduino ane Event Library
 Project home: https://github.com/master-hamster/LiteMachine
 Libraries:
   Event: https://github.com/master-hamster/Events
+  
   Dallas Themperature: http://milesburton.com/Dallas_Temperature_Control_Library
+  
   OneWire: 
+  
 BaseLiteBox - Basic Light Controller
 
 Usage
