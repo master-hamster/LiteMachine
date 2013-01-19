@@ -11,8 +11,15 @@ Libraries:
   
   Dallas Themperature: http://milesburton.com/Dallas_Temperature_Control_Library
   
+<<<<<<< HEAD
   OneWire: http://playground.arduino.cc/Learning/OneWire
   
+=======
+  OneWire: 
+  
+BaseLiteBox - Basic Light Controller
+
+>>>>>>> origin/master
 Usage
 -----
 
