@@ -165,3 +165,7 @@ pip-log.txt
 
 #Multiedit
 .MEW
+
+#GIT
+.gitignore
+.gitattributes

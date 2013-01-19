@@ -1,7 +1,3 @@
-
-
-
-
 /*
 MH 2013-01-19
 Initial template
@@ -24,6 +20,7 @@ Basic Light controller
 //#include <EBeeper.h>
 #include <EButton.h>
 #include <ELED.h>
+#include <ERGBLED.h>
 #include <ETimer.h>
 #include <Events.h>
 
@@ -32,24 +29,20 @@ Basic Light controller
 
 #define SMALL_LIGHT_PIN      3
 #define BIG_LIGHT_PIN        4        
-#define MOTION_SENSOR_PIN              5
+#define MOTION_SENSOR_PIN    5
 #define MODE_BUTTON_PIN      11
 #define LIGHT_SENSOR_PIN     12
 
-#define RED_LED_PIN    7
-#define GREEN_LED_PIN    7
-#define BLUE_LED_PIN    7
-
+#define RED_LED_PIN      7
+#define GREEN_LED_PIN    8
+#define BLUE_LED_PIN     9
 
 
 enum BoxMode {
-        bmOff,
-        bmSmallLight,
-        bmBigLight,
+        bmLightOff,
+        bmLowLight,
         bmFullLight
 };
-
-
 
 
 //=====================================================================
@@ -58,16 +51,24 @@ public:
 	void init();
 	int parseEvent();
 
+        void switchToMode(BoxMode newMode);
+        void setLightOff();
+        void setLowLight();
+        void setFullLight();
+
+
 	oid_t timerID;
         oid_t bigLightID;
         oid_t smallLightID;
         oid_t modeButtonID;
         oid_t motionSensorID;
         oid_t lightSensorID;
+        oid_t stateIndicatorID;
         
 	ETimer timer;
         ELED smallLight;
         ELED bigLight;
+        ERGBLED stateIndicator;
         EButton modeButton;
         EButton motionSensor;
         EAnalogInput lightSensor;
@@ -95,8 +96,8 @@ void MyApplication::init()
 	addObject( &motionSensor );
 	addObject( &lightSensor );
 
-        currentMode = bmOff;
-        lastMode = bmOff;
+        currentMode = bmLightOff;
+        lastMode = bmLightOff;
         currentLightLevel = 0;
         motionDetected = false;
 };
@@ -110,21 +111,20 @@ int MyApplication::parseEvent()
 */
 {
         switch ( currentMode ) {
-        case bmOff: 
+        case bmLightOff: 
              
                 break;
-        case bmSmallLight:
+        case bmLowLight:
         
                 break;
                 
-        case bmBigLight:
+        case bmFullLight:
         
                 break;
         }        
         
         
 	if ( currentEvent.eventType == 0 ) {
-		//We've got temperature event - let's print data
 		Serial.print("RESULT Temp:");
 		Serial.print(currentEvent.eventData);
 		Serial.print(" and again:");
@@ -133,6 +133,28 @@ int MyApplication::parseEvent()
 	}
   return 0;
 };
+
+
+void MyApplication::switchToMode(BoxMode newMode)
+{
+          
+}
+
+
+void setAllOff()
+{
+};
+
+void setLowLight()
+{
+};
+
+void setFullLight()
+{
+};
+
+
+
 
 //====================================================END OF MyApp definition
 MyApplication mainApp;
