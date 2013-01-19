@@ -20,29 +20,42 @@ Basic Light controller
 //#include <EBeeper.h>
 #include <EButton.h>
 #include <ELED.h>
-#include <ERGBLED.h>
+//#include <ERGBLED.h>
 #include <ETimer.h>
 #include <Events.h>
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-#define SMALL_LIGHT_PIN      3
-#define BIG_LIGHT_PIN        4        
-#define MOTION_SENSOR_PIN    5
-#define MODE_BUTTON_PIN      11
-#define LIGHT_SENSOR_PIN     12
 
-#define RED_LED_PIN      7
-#define GREEN_LED_PIN    8
-#define BLUE_LED_PIN     9
+
+#define DEBUG_BASELITEBOX
+
+
+//Inputs
+//Digital Inputs
+#define MOTION_SENSOR_PIN    4
+#define MODE_BUTTON_PIN      5
+//Analog Inputs
+#define LIGHT_SENSOR_PIN     3
+
+//Outputs
+#define SMALL_LIGHT_PIN      8
+#define BIG_LIGHT_PIN        9        
+
+#define RED_LED_PIN      10
+#define GREEN_LED_PIN    11
+#define BLUE_LED_PIN     12
 
 
 enum BoxMode {
         bmLightOff,
         bmLowLight,
-        bmFullLight
+        bmFullLight,
+        bmMotionDetected
 };
+
+#define evChangeMode         131
 
 
 //=====================================================================
@@ -51,27 +64,33 @@ public:
 	void init();
 	int parseEvent();
 
-        void switchToMode(BoxMode newMode);
+        void setNextMode();
+
+        void switchToMode(BoxMode newMode); //?????
         void setLightOff();
         void setLowLight();
         void setFullLight();
 
-
 	oid_t timerID;
+
+        oid_t motionSensorID;
+        oid_t modeButtonID;
+        oid_t lightSensorID;
+
         oid_t bigLightID;
         oid_t smallLightID;
-        oid_t modeButtonID;
-        oid_t motionSensorID;
-        oid_t lightSensorID;
-        oid_t stateIndicatorID;
+        oid_t indicatorLightOffID;
+        oid_t indicatorLowLightID;
+        oid_t indicatorFullLightID;
+
+        EButton modeButton;
+        EButton motionSensor;
+        EAnalogInput lightSensor;
         
 	ETimer timer;
         ELED smallLight;
         ELED bigLight;
-        ERGBLED stateIndicator;
-        EButton modeButton;
-        EButton motionSensor;
-        EAnalogInput lightSensor;
+//        ERGBLED stateIndicator;
 private:
         BoxMode currentMode;
         BoxMode lastMode;
@@ -85,8 +104,8 @@ void MyApplication::init()
 	timerID        = timer.init( 0, 0, true );
         bigLightID     = bigLight.init( BIG_LIGHT_PIN );
         smallLightID   = smallLight.init( SMALL_LIGHT_PIN );
-        modeButtonID   = modeButton.init( MODE_BUTTON_PIN );
-        motionSensorID = motionSensor.init( MOTION_SENSOR_PIN ); 
+        modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );
+        motionSensorID = motionSensor.init( MOTION_SENSOR_PIN, true ); 
         lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
 
 	addObject( &timer );
@@ -110,29 +129,31 @@ int MyApplication::parseEvent()
         mode change
 */
 {
-        switch ( currentMode ) {
-        case bmLightOff: 
-             
-                break;
-        case bmLowLight:
-        
-                break;
-                
-        case bmFullLight:
-        
-                break;
-        }        
-        
-        
-	if ( currentEvent.eventType == 0 ) {
-		Serial.print("RESULT Temp:");
-		Serial.print(currentEvent.eventData);
-		Serial.print(" and again:");
-		Serial.println(float(currentEvent.eventData) / 100);
+	if ( (currentEvent.eventType == evKeyPressed) && (currentEvent.sourceID == modeButtonID ) ) {
+                setNextMode();
 		return 1;
 	}
   return 0;
 };
+
+
+void MyApplication::setNextMode()
+{
+        Serial.print("Change mode from ");
+        Serial.println(currentMode);
+          
+        switch ( currentMode ) {
+        case bmLightOff: 
+                setLowLight();
+                break;
+        case bmLowLight:
+                setFullLight();
+                break;
+        case bmFullLight:
+                setLightOff();        
+                break;
+        }        
+}
 
 
 void MyApplication::switchToMode(BoxMode newMode)
@@ -141,16 +162,25 @@ void MyApplication::switchToMode(BoxMode newMode)
 }
 
 
-void setAllOff()
+void MyApplication::setLightOff()
 {
+        currentMode = bmLightOff;
+        bigLight.off();
+        smallLight.off();
 };
 
-void setLowLight()
+void MyApplication::setLowLight()
 {
+        currentMode = bmLowLight;
+        bigLight.off();
+        smallLight.on();
 };
 
-void setFullLight()
+void MyApplication::setFullLight()
 {
+        currentMode = bmFullLight;
+        bigLight.on();
+        smallLight.off();
 };
 
 

@@ -7,19 +7,10 @@ Programs in library:
 Event-driven Light Controller, based on Arduino ane Event Library
 Project home: https://github.com/master-hamster/LiteMachine
 Libraries:
-  Event: https://github.com/master-hamster/Events
+  Event: http://github.com/master-hamster/Events
   
   Dallas Themperature: http://milesburton.com/Dallas_Temperature_Control_Library
   
-<<<<<<< HEAD
-  OneWire: http://playground.arduino.cc/Learning/OneWire
-  
-=======
-  OneWire: 
-  
-BaseLiteBox - Basic Light Controller
-
->>>>>>> origin/master
 Usage
 -----
 
@@ -50,6 +41,15 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+Hardware
+--------
+
+All sensors must have 0 or earth when in active state.
+For example: Pir sensor must have 0 when motion detected, 
+and 1 or NC when no motion.
+
+Button mus have to be NC to earth.
 
 
 
