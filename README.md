@@ -1,23 +1,24 @@
 LiteBox - Basic Light Controller
 ==========================================
+Programs in library:
+	BaseLiteBox - Basic Light Controller
+
+
 Event-driven Light Controller, based on Arduino ane Event Library
 Project home: https://github.com/master-hamster/LiteMachine
 Libraries:
   Event: https://github.com/master-hamster/Events
+  
   Dallas Themperature: http://milesburton.com/Dallas_Temperature_Control_Library
-  OneWire: 
-BaseLiteBox - Basic Light Controller
-
+  
+  OneWire: http://playground.arduino.cc/Learning/OneWire
+  
 Usage
 -----
 
 Get it and run it.
 
-
-Credits
--------
-
-Original OneWire Library: http://playground.arduino.cc/Learning/OneWire
+Hardware described at the end of every project file 
 
 
 Website
