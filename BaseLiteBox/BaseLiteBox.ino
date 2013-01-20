@@ -4,12 +4,12 @@ Initial template
 
 Basic Light controller 
 - PIR Motion Sensor
-- Mode Button
+- State Button
 - Light Sensor
 
 - Small Light Output
 - Big Light Output
-- RGB Mode Led
+- 
 
 */
 
@@ -48,30 +48,33 @@ Basic Light controller
 #define BLUE_LED_PIN     12
 
 
-enum BoxMode {
-        bmLightOff,
-        bmLowLight,
-        bmFullLight,
-        bmMotionDetected
+enum BoxState {
+        bsLightOff,
+        bsLowLight,
+        bsFullLight,
+        bsMotionDetected
 };
 
-#define evChangeMode         131
+#define evStateButton         131
+#define evMotionTimeout       133
+
 
 
 //=====================================================================
 class MyApplication : public EApplication {
 public:
 	void init();
-	int parseEvent();
+	void parseEvent();
 
-        void setNextMode();
+        void setNextState();
 
-        void switchToMode(BoxMode newMode); //?????
+//        void switchToState(BoxState newState); 
         void setLightOff();
         void setLowLight();
         void setFullLight();
+        void setMotionDetected();
 
-	oid_t timerID;
+	oid_t motionTimerID;
 
         oid_t motionSensorID;
         oid_t modeButtonID;
@@ -87,13 +90,18 @@ public:
         EButton motionSensor;
         EAnalogInput lightSensor;
         
-	ETimer timer;
+        ELED indicatorLightOff;
+        ELED indicatorLowLight;
+        ELED indicatorFullLight;
+
+        
+	ETimer motionTimer;
         ELED smallLight;
         ELED bigLight;
 //        ERGBLED stateIndicator;
 private:
-        BoxMode currentMode;
-        BoxMode lastMode;
+        BoxState currentState;
+//        BoxState lastState;
         int currentLightLevel;
         bool motionDetected;
 
@@ -101,27 +109,35 @@ private:
         
 void MyApplication::init()
 {
-	timerID        = timer.init( 0, 0, true );
+	motionTimerID  = motionTimer.init( 10000, evMotionTimeout, false );
         bigLightID     = bigLight.init( BIG_LIGHT_PIN );
         smallLightID   = smallLight.init( SMALL_LIGHT_PIN );
-        modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );
+        modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );   
+          modeButton.setEvents( evStateButton );
         motionSensorID = motionSensor.init( MOTION_SENSOR_PIN, true ); 
         lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
 
-	addObject( &timer );
-	addObject( &bigLight );
-	addObject( &smallLight );
+        indicatorLightOffID  = indicatorLightOff.init( RED_LED_PIN );
+        indicatorLowLightID  = indicatorLowLight.init( GREEN_LED_PIN );
+        indicatorFullLightID = indicatorFullLight.init( BLUE_LED_PIN );
+
+
+	addObject( &motionTimer );
 	addObject( &modeButton );
 	addObject( &motionSensor );
-	addObject( &lightSensor );
 
-        currentMode = bmLightOff;
-        lastMode = bmLightOff;
+        // actualy not needed but Ordnung!
+	addObject( &bigLight );
+	addObject( &smallLight );
+	//addObject( &lightSensor );
+
+        currentState = bsLightOff;
+//        lastState    = bsLightOff;
         currentLightLevel = 0;
         motionDetected = false;
 };
 
-int MyApplication::parseEvent()
+void MyApplication::parseEvent()
 /*
   Handle next events:
         current light level measure
@@ -129,60 +145,112 @@ int MyApplication::parseEvent()
         mode change
 */
 {
-	if ( (currentEvent.eventType == evKeyPressed) && (currentEvent.sourceID == modeButtonID ) ) {
-                setNextMode();
-		return 1;
+        switch ( currentEvent.eventType ){
+	case evStateButton:
+                setNextState();
+                break;
+        case evMotionDetected:
+                if ( currentState == bsLightOff )  {
+                        setMotionDetected();
+                } else if ( currentState == bsMotionDetected )  {
+                        motionTimer.start();
+                }       
+                break;
+        case evMotionTimeout:
+                if ( currentState == bsMotionDetected ) {
+                        setLightOff();
+                }      
+                break;
 	}
-  return 0;
 };
 
 
-void MyApplication::setNextMode()
+void MyApplication::setNextState()
 {
+#ifdef DEBUG_BASELITEBOX
         Serial.print("Change mode from ");
-        Serial.println(currentMode);
-          
-        switch ( currentMode ) {
-        case bmLightOff: 
+        Serial.println(currentState);
+#endif          
+        switch ( currentState ) {
+        case bsLightOff: 
                 setLowLight();
                 break;
-        case bmLowLight:
+        case bsLowLight:
                 setFullLight();
                 break;
-        case bmFullLight:
+        case bsFullLight:
                 setLightOff();        
+                break;
+        case bsMotionDetected:
+                setFullLight();
                 break;
         }        
 }
 
-
-void MyApplication::switchToMode(BoxMode newMode)
+/*
+void MyApplication::switchToState(BoxState newState)
 {
           
 }
-
+*/
 
 void MyApplication::setLightOff()
 {
-        currentMode = bmLightOff;
+        currentState = bsLightOff;
+#ifdef DEBUG_BASELITEBOX
+        Serial.println(" bsLightOff");
+#endif
         bigLight.off();
         smallLight.off();
+// set mode indication
+        indicatorLightOff.on();        
+        indicatorLowLight.off();
+        indicatorFullLight.off();
 };
 
 void MyApplication::setLowLight()
 {
-        currentMode = bmLowLight;
+        currentState = bsLowLight;
+#ifdef DEBUG_BASELITEBOX
+        Serial.println(" bsLowLight");
+#endif
         bigLight.off();
         smallLight.on();
+// set mode indication
+        indicatorLightOff.off();        
+        indicatorLowLight.on();
+        indicatorFullLight.off();
 };
 
 void MyApplication::setFullLight()
 {
-        currentMode = bmFullLight;
+        currentState = bsFullLight;
+#ifdef DEBUG_BASELITEBOX
+        Serial.println(" bsFullLight");
+#endif
         bigLight.on();
         smallLight.off();
+// set mode indication
+        indicatorLightOff.off();        
+        indicatorLowLight.off();
+        indicatorFullLight.on();
 };
 
+void MyApplication::setMotionDetected()
+{
+        currentState = bsMotionDetected;
+#ifdef DEBUG_BASELITEBOX
+        Serial.println(" bsMotionDetected");
+#endif
+        motionTimer.start();
+//select light level based on current light level        
+        bigLight.on();
+        smallLight.on();
+// set mode indication
+        indicatorLightOff.on();        
+        indicatorLowLight.on();
+        indicatorFullLight.on();
+};
 
 
 
