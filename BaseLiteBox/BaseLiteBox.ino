@@ -9,7 +9,7 @@ Basic Light controller
 
 - Small Light Output
 - Big Light Output
-- 
+ 
 
 */
 
@@ -73,7 +73,8 @@ public:
         void setLowLight();
         void setFullLight();
         void setMotionDetected();
-
+        void testOutput(const oid_t OutputDeviceID);
+        
 	oid_t motionTimerID;
 
         oid_t motionSensorID;
@@ -109,33 +110,71 @@ private:
         
 void MyApplication::init()
 {
-	motionTimerID  = motionTimer.init( 10000, evMotionTimeout, false );
-        bigLightID     = bigLight.init( BIG_LIGHT_PIN );
-        smallLightID   = smallLight.init( SMALL_LIGHT_PIN );
-        modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );   
-          modeButton.setEvents( evStateButton );
-        motionSensorID = motionSensor.init( MOTION_SENSOR_PIN, true ); 
-        lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
+        currentLightLevel = 0;
+        motionDetected = false;
 
-        indicatorLightOffID  = indicatorLightOff.init( RED_LED_PIN );
-        indicatorLowLightID  = indicatorLowLight.init( GREEN_LED_PIN );
-        indicatorFullLightID = indicatorFullLight.init( BLUE_LED_PIN );
+      	motionTimerID  = motionTimer.init( 10000, evMotionTimeout, false );
+        bigLightID     = bigLight.init( BIG_LIGHT_PIN, PORT_REVERSE_MODE );
+        smallLightID   = smallLight.init( SMALL_LIGHT_PIN, PORT_REVERSE_MODE );
+        modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );   
+            modeButton.setEvents( evStateButton );
+        motionSensorID = motionSensor.init( MOTION_SENSOR_PIN, true ); 
+            motionSensor.setEvents( evMotionDetected );
+        lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
+// set indicator port and reverse flag for all indicators
+        indicatorLightOffID  = indicatorLightOff.init( RED_LED_PIN, PORT_REVERSE_MODE );
+        indicatorLowLightID  = indicatorLowLight.init( BLUE_LED_PIN, PORT_REVERSE_MODE );
+        indicatorFullLightID = indicatorFullLight.init( GREEN_LED_PIN, PORT_REVERSE_MODE );
+        
 
 
 	addObject( &motionTimer );
 	addObject( &modeButton );
 	addObject( &motionSensor );
 
-        // actualy not needed but Ordnung!
-	addObject( &bigLight );
 	addObject( &smallLight );
+	addObject( &bigLight );
+
+        addObject( &indicatorLightOff );
+        addObject( &indicatorLowLight );
+        addObject( &indicatorFullLight );
+        
 	//addObject( &lightSensor );
 
         currentState = bsLightOff;
 //        lastState    = bsLightOff;
-        currentLightLevel = 0;
-        motionDetected = false;
+        
+//   check all outputs
+//        indicatorLightOff.on();  delay(1000);  indicatorLightOff.off();   delay(1000);     
+//        indicatorLowLight.on();  delay(1000);  indicatorLowLight.off();   delay(1000);     
+//        indicatorFullLight.on(); delay(1000);  indicatorFullLight.off();  delay(1000);     
+//        smallLight.on();         delay(1000);  smallLight.off();          delay(1000);     
+//        bigLight.on();           delay(1000);  bigLight.off();            delay(1000);      
+//delay(3000);
+
+// 
+       testOutput(indicatorLightOffID); 
+       testOutput(indicatorLowLightID); 
+       testOutput(indicatorFullLightID); 
+       testOutput(smallLightID); 
+       testOutput(bigLightID); 
 };
+
+
+void MyApplication::testOutput(const oid_t OutputDeviceID) 
+// Send evTurnOn, delay 1S, send evTurnOff, delay 1S;
+{
+        Serial.print("Check output ID:");
+        Serial.println(OutputDeviceID);
+        currentEvent.destinationID = OutputDeviceID;        
+        currentEvent.eventType = evTurnOn;
+        handleEvent();
+        delay(1000);
+        currentEvent.eventType = evTurnOff;
+        handleEvent();
+        delay(1000);
+        
+};        
 
 void MyApplication::parseEvent()
 /*
@@ -268,6 +307,7 @@ void setup()
 	mainApp.printNames();
 
 	Serial.println("Loading done!");
+        mainApp.setLightOff();
 };
 
 
