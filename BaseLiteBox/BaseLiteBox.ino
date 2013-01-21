@@ -112,7 +112,7 @@ void MyApplication::init()
         currentLightLevel = 0;
         motionDetected = false;
 
-      	motionTimerID  = motionTimer.init( 10000, evMotionTimeout, false );
+      	motionTimerID  = motionTimer.init( 10000, evMotionTimeout, false, false );
         bigLightID     = bigLight.init( BIG_LIGHT_PIN, PORT_REVERSE_MODE );
         smallLightID   = smallLight.init( SMALL_LIGHT_PIN, PORT_REVERSE_MODE );
         modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );   
@@ -152,11 +152,11 @@ void MyApplication::init()
 //delay(3000);
 
 // another type of checking via events
-       testOutput(indicatorLightOffID); 
-       testOutput(indicatorLowLightID); 
-       testOutput(indicatorFullLightID); 
-       testOutput(smallLightID); 
-       testOutput(bigLightID); 
+//       testOutput(indicatorLightOffID); 
+//       testOutput(indicatorLowLightID); 
+//       testOutput(indicatorFullLightID); 
+//       testOutput(smallLightID); 
+//       testOutput(bigLightID); 
 };
 
 
@@ -299,14 +299,19 @@ void setup()
 {
 	Serial.begin(9600);
 	Serial.println("BaseLiteBox Loading..");
-
  
 	mainApp.init();
 	Serial.println("Current objects:");
 	mainApp.printNames();
-
 	Serial.println("Loading done!");
+
+        // test all objects
+        mainApp.sendTestEvent( evTurnOn, evTurnOff,  1000, 1000 );
+	Serial.println("Output Testing done!");
+
+        // Set initial state to all light off
         mainApp.setLightOff();
+
 };
 
 
