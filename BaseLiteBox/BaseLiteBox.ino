@@ -23,14 +23,13 @@ Basic Light controller
 //#include <ERGBLED.h>
 #include <ETimer.h>
 #include <Events.h>
-
+#include <EApplication.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 
 
 #define DEBUG_BASELITEBOX
-
 
 //Inputs
 //Digital Inputs
@@ -144,7 +143,7 @@ void MyApplication::init()
         currentState = bsLightOff;
 //        lastState    = bsLightOff;
         
-//   check all outputs
+//   check all outputs by direct control
 //        indicatorLightOff.on();  delay(1000);  indicatorLightOff.off();   delay(1000);     
 //        indicatorLowLight.on();  delay(1000);  indicatorLowLight.off();   delay(1000);     
 //        indicatorFullLight.on(); delay(1000);  indicatorFullLight.off();  delay(1000);     
@@ -152,7 +151,7 @@ void MyApplication::init()
 //        bigLight.on();           delay(1000);  bigLight.off();            delay(1000);      
 //delay(3000);
 
-// 
+// another type of checking via events
        testOutput(indicatorLightOffID); 
        testOutput(indicatorLowLightID); 
        testOutput(indicatorFullLightID); 
@@ -314,7 +313,9 @@ void setup()
 void loop()
 { 
 	if (mainApp.getEvent()) {  
+#ifdef DEBUG_BASELITEBOX
 		mainApp.printEvent();
+#endif
 		mainApp.parseEvent();
 		mainApp.handleEvent();
 	}
