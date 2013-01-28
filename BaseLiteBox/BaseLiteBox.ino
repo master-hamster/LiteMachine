@@ -55,6 +55,7 @@ enum BoxState {
 };
 
 #define evStateButton         131
+#define evLightOff            132
 #define evMotionTimeout       133
 
 
@@ -72,7 +73,7 @@ public:
         void setLowLight();
         void setFullLight();
         void setMotionDetected();
-        void testOutput(const oid_t OutputDeviceID);
+        void testOutput( const oid_t OutputDeviceID );
         
 	oid_t motionTimerID;
 
@@ -116,7 +117,7 @@ void MyApplication::init()
         bigLightID     = bigLight.init( BIG_LIGHT_PIN, PORT_REVERSE_MODE );
         smallLightID   = smallLight.init( SMALL_LIGHT_PIN, PORT_REVERSE_MODE );
         modeButtonID   = modeButton.init( MODE_BUTTON_PIN, true );   
-            modeButton.setEvents( evStateButton );
+            modeButton.setEvents( evStateButton, evLightOff );
         motionSensorID = motionSensor.init( MOTION_SENSOR_PIN, true ); 
             motionSensor.setEvents( evMotionDetected );
         lightSensorID  = lightSensor.init( LIGHT_SENSOR_PIN );
@@ -198,6 +199,9 @@ void MyApplication::parseEvent()
                 if ( currentState == bsMotionDetected ) {
                         setLightOff();
                 }      
+                break;
+        case evLightOff:
+                setLightOff();
                 break;
 	}
 };
