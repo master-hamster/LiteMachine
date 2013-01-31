@@ -33,8 +33,8 @@ Basic Light controller
 
 //Inputs
 //Digital Inputs
-#define MOTION_SENSOR_PIN    4
-#define MODE_BUTTON_PIN      5
+#define MOTION_SENSOR_PIN    1
+#define MODE_BUTTON_PIN      2
 //Analog Inputs
 #define LIGHT_SENSOR_PIN     3
 
@@ -164,7 +164,7 @@ void MyApplication::init()
 void MyApplication::testOutput(const oid_t OutputDeviceID) 
 // Send evTurnOn, delay 1S, send evTurnOff, delay 1S;
 {
-        Serial.print("Check output ID:");
+        Serial.print(F("Check output ID:"));
         Serial.println(OutputDeviceID);
         currentEvent.destinationID = OutputDeviceID;        
         currentEvent.eventType = evTurnOn;
@@ -210,8 +210,11 @@ void MyApplication::parseEvent()
 void MyApplication::setNextState()
 {
 #ifdef DEBUG_BASELITEBOX
-        Serial.print("Change mode from ");
+        Serial.print(F("Change mode from "));
         Serial.println(currentState);
+        Serial.print( F("Free memory:"));
+        Serial.println( freeRam() );
+
 #endif          
         switch ( currentState ) {
         case bsLightOff: 
@@ -240,7 +243,7 @@ void MyApplication::setLightOff()
 {
         currentState = bsLightOff;
 #ifdef DEBUG_BASELITEBOX
-        Serial.println(" bsLightOff");
+        Serial.println(F(" bsLightOff"));
 #endif
         bigLight.off();
         smallLight.off();
@@ -254,7 +257,7 @@ void MyApplication::setLowLight()
 {
         currentState = bsLowLight;
 #ifdef DEBUG_BASELITEBOX
-        Serial.println(" bsLowLight");
+        Serial.println(F(" bsLowLight"));
 #endif
         bigLight.off();
         smallLight.on();
@@ -268,7 +271,7 @@ void MyApplication::setFullLight()
 {
         currentState = bsFullLight;
 #ifdef DEBUG_BASELITEBOX
-        Serial.println(" bsFullLight");
+        Serial.println(F(" bsFullLight"));
 #endif
         bigLight.on();
         smallLight.off();
@@ -282,7 +285,7 @@ void MyApplication::setMotionDetected()
 {
         currentState = bsMotionDetected;
 #ifdef DEBUG_BASELITEBOX
-        Serial.println(" bsMotionDetected");
+        Serial.println(F(" bsMotionDetected"));
 #endif
         motionTimer.start();
 //select light level based on current light level        
@@ -296,22 +299,29 @@ void MyApplication::setMotionDetected()
 
 
 
+int freeRam() {
+  extern int __heap_start, *__brkval; 
+  int v; 
+  return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
+}
+
+
 //====================================================END OF MyApp definition
 MyApplication mainApp;
 
 void setup()
 {
 	Serial.begin(9600);
-	Serial.println("BaseLiteBox Loading..");
+	Serial.println(F("BaseLiteBox Loading.."));
  
 	mainApp.init();
-	Serial.println("Current objects:");
+	Serial.println(F("Current objects:"));
 	mainApp.printNames();
-	Serial.println("Loading done!");
+	Serial.println(F("Loading done! Check hardware..."));
 
         // test all objects
         mainApp.sendTestEvent( evTurnOn, evTurnOff,  1000, 1000 );
-	Serial.println("Output Testing done!");
+	Serial.println(F("Output Testing done!"));
 
         // Set initial state to all light off
         mainApp.setLightOff();
